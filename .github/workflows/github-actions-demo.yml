@@ -1,0 +1,29 @@
+# This workflow will do a clean installation of node dependencies, cache/restore them, build the source code and run tests across different versions of node
+# For more information see: https://help.github.com/actions/language-and-framework-guides/using-nodejs-with-github-actions
+
+name: Frontend
+
+on: [workflow_dispatch]
+jobs:
+      
+  Build-Docker-Image-for-server:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - uses: actions/setup-node@v3
+
+    
+    - name: Build the Docker image
+      run: docker build ./frontend --file ./frontend/Dockerfile --tag ${{secrets.DOCKERI}}/colib-client
+    - run: |
+          cd frontend
+          npm run test
+
+    - name: Login Docker
+      env: 
+        DockerID: ${{secrets.DOCKERI}}
+        DockerPSWD: ${{secrets.DOCKERPSWD}}
+      run: docker login -u $DockerID -p $DockerPSWD
+      
+    - name: Docker push
+      run: docker push ${{secrets.DOCKERI}}/colib-client
